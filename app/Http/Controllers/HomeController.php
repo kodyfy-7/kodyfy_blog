@@ -49,7 +49,10 @@ class HomeController extends Controller
                 $subDetail = SubscriptionDetail::whereSubscriptionId($reader->current_sub_id)->wherePostId($post->id)->where('task', '=', 'read')->exists();
                 if($subDetail) 
                 {
-                    dd('no points, so i am just gonna read.');
+                    $categories = Category::all();
+                    $comments = Comment::where('post_id', $post->id)->orderBy('id', 'desc')->get();
+
+                    return view('post', compact('post', 'comments', 'categories'));
                 } else
                 {
                     dd('take pointrs.');
