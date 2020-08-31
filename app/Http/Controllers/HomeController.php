@@ -94,7 +94,37 @@ class HomeController extends Controller
 
     public function dashboard()
     {
-        return view('home');
+        $reader = auth()->user();
+        if($reader->payment_status > 0)
+        {
+            $subDetail = SubscriptionDetail::whereWhoSubId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->exists();
+            if($subDetail) {
+                $points_per_refer = SubscriptionDetail::whereWhoSubId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->sum('point');
+            } else {
+                $points_per_refer = 0;
+            }
+
+            $subDetail1 = SubscriptionDetail::whereSubscriptionId($reader->current_sub_id)->where('task', '=', 'read')->exists();
+            if($subDetail1) {
+                $points_per_post = SubscriptionDetail::whereSubscriptionId($reader->current_sub_id)->where('task', '=', 'read')->sum('point');
+            } else {
+                $points_per_post = 0;
+            }
+
+            $points_total = $points_per_post + $points_per_refer;
+            $b = 10;
+
+            $progress_point = $points_total / $b;
+            return view('home', compact('points_per_refer', 'points_per_post', 'points_total', 'progress_point'));
+        } else 
+        {
+            $points_per_post = 0;
+            $points_per_refer = 0;
+            $points_total = 0;
+            $progress_point = 0;
+            return view('home', compact('points_per_refer', 'points_per_post', 'points_total', 'progress_point'));
+        }
+        
     }
 
     public function upload_invoice(Request $request)
@@ -167,7 +197,7 @@ class HomeController extends Controller
             'invoice_status'        =>  'verified'
         );
 
-        Invoice::whereUserId($request->hidden_invoice_id)->update($form_data);
+        Invoice::whereId($request->hidden_invoice_id)->update($form_data);
 
         $form_data = array(
             'payment_status'        =>  '1'

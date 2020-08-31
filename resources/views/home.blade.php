@@ -36,7 +36,10 @@
                         <li class="list-group-item">Email: {{ Auth::user()->email }}</li>
                         <li class="list-group-item">Referral link: {{ Auth::user()->referral_link }}</li>
                         <li class="list-group-item">Referrer: {{ Auth::user()->referrer->name ?? 'Not Specified' }}</li>
-                        <li class="list-group-item">Referral count: {{count( Auth::user()->referrals) ?? '0' }}</li>
+                        <li class="list-group-item">Refer Points: {{ $points_per_refer }}</li>
+                        <li class="list-group-item">Task Points: {{ $points_per_post }}</li>
+                        <li class="list-group-item">Total Points: {{ $points_total }}</li>
+                        <li class="list-group-item">Progress Points: {{ $progress_point }}</li>
                     </ul>
                 </div>
             </div>
