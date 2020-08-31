@@ -23,9 +23,18 @@ Route::post('/post', 'HomeController@comment_save')->name('comment.save');
 //Route::any('/search', 'HomeController@search')->name('search');
 
 Route::get('/home', 'HomeController@dashboard')->name('home');
+Route::post('/upload', 'HomeController@upload_invoice')->name('invoice.upload');
 
 Route::get('admin/home', 'HomeController@adminHome')->name('admin.home')->middleware('is_admin');
 Route::resource('admin/posts', 'PostsController')->middleware('is_admin');
+Route::get('admin/view_invoice/{invoice}', 'HomeController@view_invoice')->middleware('is_admin');
+
+Route::post('admin/activate', 'HomeController@activate_account')->name('admin.activate_account');
+
+  //Route::post('/confirm', 'AdminController@confirm_payment')->name('admin.confirm_payment');
+/*Route::group(['middleware' => 'auth'], function() {
+
+});*/
 //Route::post('admin/posts/{id}', 'PostsController@publish')->middleware('is_admin');
 
 //Route::post('admin/posts/{id}', 'PostsController@unpublish')->middleware('is_admin');

@@ -16,7 +16,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'is_admin'
+        'name', 'email', 'password', 'is_admin', 'payment_status', 'username', 'referrer_id', 'admin_role', 'user_image', 'wallet_address', 'current_sub_id'
     ];
 
     /**
@@ -36,6 +36,26 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    protected $appends = ['referrer_link'];
+
+    public function getReferralLinkAttribute()
+    {
+        return $this->referral_link = route('register', ['ref' => $this->username]);
+    }
+    /* A user has a referrer */
+
+    public function referrer() 
+    {
+        return $this->belongsTo(User::class, 'referrer_id', 'id');
+    }
+
+    /* A user has many referrals */
+    public function referrals() 
+    {
+        return $this->hasMany(User::class, 'referrer_id', 'id');
+    }
+
 
     public function posts(){
         return $this->hasMany(Post::class);

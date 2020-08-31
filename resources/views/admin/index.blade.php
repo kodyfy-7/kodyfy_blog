@@ -49,7 +49,29 @@
                 <div class="card-header">{{ __('Dashboard') }}</div>
 
                 <div class="card-body">
-                    <p>You are an admin.</p>
+                    @if (count($invoices) > 0)
+                        <table id="datatable" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                <th>S/N</th>
+                                <th>Name</th>
+                                <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>                                
+                                @foreach ($invoices as $invoice)
+                                    <tr>
+                                    <td>**</td>
+                                    <td>{{$invoice->user->name}}</td>
+                                    <td><a href="/admin/view_invoice/{{$invoice->invoice_ticket}}" class="btn btn-info">View</a></td>
+                                    </tr>
+                                @endforeach
+                                
+                            </tbody>
+                        </table>
+                    @else 
+                        <p>No data available</p>
+                    @endif
                 </div>
             </div>
         </div>

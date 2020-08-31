@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Post;
 use App\Comment;
+use App\Invoice;
+use App\User;
+use App\Subscription;
+use App\SubscriptionDetail;
 use Validator;
 use DB;
 use Illuminate\Support\Str;
@@ -60,75 +64,86 @@ class HomeController extends Controller
         return view('home');
     }
 
+    public function upload_invoice(Request $request)
+    {
+        $this->validate($request, [
+            'payment_invoice' => 'required|image|max:1999'
+        ]);
+
+        //Handle file upload
+        // Get filename with the extension
+        $filenameWithExt = $request->file('payment_invoice')->getClientOriginalName();
+        // Get just filename
+        $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+        // Get just ext
+        $extension = $request->file('payment_invoice')->getClientOriginalExtension();
+        // Filename to store
+        $fileNameToStore = $filename.'_'.time().'.'.$extension;
+        // Upload Image
+        $path = $request->file('payment_invoice')->storeAs('public/invoices', $fileNameToStore);
+        
+        $var = 'ba';
+        $name = Str::kebab(auth()->user()->name);
+        $ticket = $var.'_'.$name.'_'.time();
+
+        //Create Invoice
+        $invoice = new Invoice;
+        $invoice->invoice_file = $fileNameToStore;
+        $invoice->user_id = auth()->user()->id;
+        $invoice->invoice_status = 'unverified';
+        $invoice->invoice_ticket = $ticket;
+        $invoice->save();
+
+        return redirect()->back()->with('success', 'File Uploaded, you will get a mail once verified.');
+    }
+
 
     public function adminHome()
     {
         $eID = auth()->user()->id;
         $posts = Post::whereUserId($eID)->orderBy('id', 'desc')->get();
-        return view('admin.index', compact('posts'));
+        $invoices = Invoice::whereInvoiceStatus('unverified')->get();
+        return view('admin.index', compact('posts', 'invoices'));
     }
 
-    public function create_post()
+    public function view_invoice(Invoice $invoice)
     {
-        return view('admin.create_post');
+        //$subscription = Subscription::where('user_id', '=', $invoice->user_id)->where('subscription_status', '=', 'pending')->orderBy('id', 'desc')->first();
+        return view('admin.view_invoice', compact('invoice', 'subscription'));
     }
 
-    public function save_post(Request $request)
+    public function activate_account(Request $request)
     {
-        $this->validate($request, [
-            'title' => 'required',
-            'category' => 'required',
-            'content' => 'required'
-        ]);
+        //Activate pending payment from user
+        $form_data = array(
+            'sub_status'        =>  '1'
+        );
 
-        $slug = Str::kebab($request->title);
-        $slug = $slug.'-'.time();
+        Subscription::whereId($request->hidden_subscription)->update($form_data);
 
-        //Create Post
-        $post = new Post;
-        $post->post_title = $request->input('title');
-        $post->category_id = $request->input('category');
-        $post->post_content = $request->input('content');
-        $post->post_slug = $slug;
-        $post->user_id = auth()->user()->id;
-        $post->post_status = 'draft';
-        $post->save();
+        if(SubscriptionDetail::whereSubscriptionId($request->hidden_subscription)->whereTask('refer')->exists())
+        {
+            $target = TargetPoint::first();
+            $form_data = array(
+                'point'        =>  $target->refer_task
+            );
 
-        return redirect()->back()->with('success', 'Post has been saved as draft');
-    }
-
-    public function edit_post(Post $post)
-    {
-        return view('admin.edit_post', compact('post'));
-    }
-
-    public function update_post(Request $request, $id)
-    {
-        $this->validate($request, [
-            'title' => 'required',
-            'category' => 'required',
-            'content' => 'required'
-        ]);
-
-        //Update Post
-        $post = Post::find($id);
-        $post->post_title = $request->input('title');
-        $post->category_id = $request->input('category');
-        $post->post_content = $request->input('content');
-        $post->save();
-
-        return redirect()->back()->with('success', 'Post has been edited successfully.');
-    }
-
-    public function destroy_post($id)
-    {
-        //Delete Post
-        $post = Post::find($id);
-        if(auth()->user()->id !== $post->user->id){
-            return redirect()->back()->with('error', 'Unauthorized page!');
+            SubscriptionDetail::whereSubscriptionId($request->hidden_subscription)->update($form_data);
         }
 
-        $post->delete();
-        return redirect()->back()->with('success', 'Post Deleted.');
+        $form_data = array(
+            'invoice_status'        =>  'verified'
+        );
+
+        Invoice::whereUserId($request->hidden_invoice_id)->update($form_data);
+
+        $form_data = array(
+            'payment_status'        =>  '1'
+        );
+
+        User::whereId($request->hidden_user_id)->update($form_data);
+
+        return redirect()->back()->with('success', 'Account activated.');
     }
+
 }
