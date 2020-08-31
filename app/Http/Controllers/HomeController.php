@@ -11,6 +11,7 @@ use App\Subscription;
 use App\SubscriptionDetail;
 use Validator;
 use DB;
+use Auth;
 use Illuminate\Support\Str;
 
 class HomeController extends Controller
@@ -38,8 +39,13 @@ class HomeController extends Controller
 
     public function show(Post $post)
     {
-        $comments = Comment::where('post_id', $post->id)->orderBy('id', 'desc')->get();
-        return view('post', compact('post', 'comments'));
+        if(!Auth::guest())
+        {
+            dd('i am logged in');
+        } else{
+            
+            dd('i am just a guest');
+        }
     }
 
     public function comment_save(Request $request)
