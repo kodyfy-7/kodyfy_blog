@@ -9,6 +9,8 @@ use App\Invoice;
 use App\User;
 use App\Subscription;
 use App\SubscriptionDetail;
+use App\TargetPoint;
+use App\Category;
 use Validator;
 use DB;
 use Auth;
@@ -41,7 +43,32 @@ class HomeController extends Controller
     {
         if(!Auth::guest())
         {
-            dd('i am logged in');
+            $reader = auth()->user();
+            if($reader->payment_status > 0)
+            {
+                $subDetail = SubscriptionDetail::whereSubscriptionId($reader->current_sub_id)->wherePostId($post->id)->where('task', '=', 'read')->exists();
+                if($subDetail) 
+                {
+                    $categories = Category::all();
+                    $comments = Comment::where('post_id', $post->id)->orderBy('id', 'desc')->get();
+
+                    return view('post', compact('post', 'comments', 'categories'));
+                } else
+                {
+                    $target = TargetPoint::first();
+                    SubscriptionDetail::create([
+                        'subscription_id' => $reader->current_sub_id,
+                        'post_id' => $post->id,
+                        'point' => $target->read_task,
+                        'task' => 'read'
+                    ]);
+                    $categories = Category::all();
+                    $comments = Comment::where('post_id', $post->id)->orderBy('id', 'desc')->get();
+
+                    return view('post', compact('post', 'comments', 'categories'));
+                }
+            }
+            dd('i dont have an active payment, so i am just gonna read.');
         } else{
             
             dd('i am just a guest');
