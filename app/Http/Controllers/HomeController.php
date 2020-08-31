@@ -108,8 +108,7 @@ class HomeController extends Controller
 
     public function view_invoice(Invoice $invoice)
     {
-        //$subscription = Subscription::where('user_id', '=', $invoice->user_id)->where('subscription_status', '=', 'pending')->orderBy('id', 'desc')->first();
-        return view('admin.view_invoice', compact('invoice', 'subscription'));
+        return view('admin.view_invoice', compact('invoice'));
     }
 
     public function activate_account(Request $request)

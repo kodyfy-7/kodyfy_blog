@@ -55,7 +55,8 @@
                                             @if ($invoice->user->payment_status > 0)
                                                 {{Form::submit('Activate this account', ['id' => 'payment_action_button', 'class' => 'btn btn-success btn-block', 'disabled'])}}
                                             @else
-                                                
+                                                {{Form::hidden('hidden_subscription',  $invoice->user->current_sub_id , ['id' => 'hidden_subscription', 'class' => 'form-control'])}}
+                                                {{Form::submit('Activate this account', ['id' => 'payment_action_button', 'class' => 'btn btn-success btn-block'])}}
                                             @endif
                                         </div>
                                             
