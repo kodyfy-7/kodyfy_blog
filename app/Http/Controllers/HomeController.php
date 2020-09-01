@@ -211,7 +211,8 @@ class HomeController extends Controller
 
                 //$wallet_address = Wallet::where('user_id', '=', 1)->first();
 
-                return view('withdraw', compact('points_per_post', 'points_per_refer', 'points_total', 'payment_status', 'withdraw_point', 'withdrawal'));
+                
+                return view('withdraw', compact('withdraw_point', 'withdrawal'));
             }
         } else 
         {
