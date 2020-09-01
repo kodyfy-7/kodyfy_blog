@@ -226,19 +226,19 @@ class HomeController extends Controller
         $name = Str::kebab(auth()->user()->name);
         $ticket = $var.'_'.$name.'_'.time();
 
-        /*$withdraw = new Withdrawal;
+        $withdraw = new Withdrawal;
         $withdraw->user_id = $request->input('hidden_id');
         $withdraw->withdrawal_status = 'unpaid';
-        $withdraw->subscription_id = $request->input('hidden_subscription');
+        $withdraw->sub_id = $request->input('hidden_subscription');
         $withdraw->withdrawal_ticket = $ticket;
-        $withdraw->save();*/
+        $withdraw->save();
 
-        Withdrawal::create([
+        /*Withdrawal::create([
             'user_id' => $request->input('hidden_id'),
             'withdrawal_status' => 'unpaid',
             'sub_id' => $request->input('hidden_subscription'),
             'withdrawal_ticket' => $ticket
-        ]);
+        ]);*/
 
         //send mail to admin for withdraw request, after withdrawal restart cycle
 
