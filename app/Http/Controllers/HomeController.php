@@ -11,6 +11,7 @@ use App\Subscription;
 use App\SubscriptionDetail;
 use App\TargetPoint;
 use App\Category;
+use App\Withdrawal;
 use Validator;
 use DB;
 use Auth;
@@ -115,14 +116,16 @@ class HomeController extends Controller
             $b = 10;
 
             $progress_point = $points_total / $b;
-            return view('home', compact('points_per_refer', 'points_per_post', 'points_total', 'progress_point'));
+            $withdraw_point = TargetPoint::first();
+            return view('home', compact('points_per_refer', 'points_per_post', 'points_total', 'progress_point', 'withdraw_point'));
         } else 
         {
             $points_per_post = 0;
             $points_per_refer = 0;
             $points_total = 0;
             $progress_point = 0;
-            return view('home', compact('points_per_refer', 'points_per_post', 'points_total', 'progress_point'));
+            $withdraw_point = TargetPoint::first();
+            return view('home', compact('points_per_refer', 'points_per_post', 'points_total', 'progress_point', 'withdraw_point'));
         }
         
     }
@@ -158,6 +161,87 @@ class HomeController extends Controller
         $invoice->save();
 
         return redirect()->back()->with('success', 'File Uploaded, you will get a mail once verified.');
+    }
+
+    public function save_wallet(Request $request)
+    {
+        $this->validate($request, [
+            'wallet' => 'required'
+        ]);
+
+        //Activate pending payment from user
+        $form_data = array(
+            'wallet_address'        =>  $request->wallet,
+        );
+
+        User::whereId(auth()->user()->id)->update($form_data);
+
+        return redirect()->back()->with('success', 'Your wallet address has been saved successfully.');
+    }
+
+    public function withdraw()
+    {
+        $withdraw_point = TargetPoint::first();
+        $reader = auth()->user();
+        if($reader->payment_status > 0)
+        {
+            $subDetail = SubscriptionDetail::whereWhoSubId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->exists();
+            if($subDetail) {
+                $points_per_refer = SubscriptionDetail::whereWhoSubId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->sum('point');
+            } else {
+                $points_per_refer = 0;
+            }
+
+            $subDetail1 = SubscriptionDetail::whereSubscriptionId($reader->current_sub_id)->where('task', '=', 'read')->exists();
+            if($subDetail1) {
+                $points_per_post = SubscriptionDetail::whereSubscriptionId($reader->current_sub_id)->where('task', '=', 'read')->sum('point');
+            } else {
+                $points_per_post = 0;
+            }
+
+            $points_total = $points_per_post + $points_per_refer;
+            $b = 10;
+
+            $progress_point = $points_total / $b;
+            if($points_total < $withdraw_point->target){
+                return redirect()->back()->with('error', 'You have not reached withdrawal limit.'); 
+            } else{
+                
+                $withdrawal = Withdrawal::where('user_id', '=', $reader->id)->where('sub_id', '=', $reader->current_sub_id)->whereWithdrawalStatus('unpaid')->orderBy('id', 'desc')->first();
+
+                //$wallet_address = Wallet::where('user_id', '=', 1)->first();
+
+                return view('withdraw', compact('points_per_post', 'points_per_refer', 'points_total', 'payment_status', 'withdraw_point', 'withdrawal'));
+            }
+        } else 
+        {
+            return redirect()->back()->with('error', 'You have no active subscription.');
+        }
+    }
+
+    public function withdrawal(Request $request)
+    {
+        $var = 'ba';
+        $name = Str::kebab(auth()->user()->name);
+        $ticket = $var.'_'.$name.'_'.time();
+
+        /*$withdraw = new Withdrawal;
+        $withdraw->user_id = $request->input('hidden_id');
+        $withdraw->withdrawal_status = 'unpaid';
+        $withdraw->subscription_id = $request->input('hidden_subscription');
+        $withdraw->withdrawal_ticket = $ticket;
+        $withdraw->save();*/
+
+        withdrawal::create([
+            'user_id' => $request->input('hidden_id'),
+            'withdrawal_status' => 'unpaid',
+            'sub_id' => $request->input('hidden_subscription'),
+            'withdrawal_ticket' => $ticket
+        ]);
+
+        //send mail to admin for withdraw request, after withdrawal restart cycle
+
+        return redirect()->back()->with('success', 'You have a pending withdrawal. You will be notified upon approval');
     }
 
 

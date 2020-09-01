@@ -24,6 +24,10 @@ Route::post('/post', 'HomeController@comment_save')->name('comment.save');
 
 Route::get('/home', 'HomeController@dashboard')->name('home');
 Route::post('/upload', 'HomeController@upload_invoice')->name('invoice.upload');
+Route::post('/save_wallet', 'HomeController@save_wallet')->name('save.wallet');
+Route::get('/withdrawal', 'HomeController@withdraw')->name('dashboard.withdraw');
+Route::post('/withdrawal', 'HomeController@withdrawal')->name('dashboard.withdrawal');
+
 
 Route::get('admin/home', 'HomeController@adminHome')->name('admin.home')->middleware('is_admin');
 Route::resource('admin/posts', 'PostsController')->middleware('is_admin');

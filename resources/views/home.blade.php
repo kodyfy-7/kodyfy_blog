@@ -40,6 +40,38 @@
                         <li class="list-group-item">Task Points: {{ $points_per_post }}</li>
                         <li class="list-group-item">Total Points: {{ $points_total }}</li>
                         <li class="list-group-item">Progress Points: {{ $progress_point }}</li>
+                        <li class="list-group-item">
+                            @if (is_null(auth()->user()->wallet_address))
+                                {!! Form::open(['action' => ['HomeController@save_wallet',Auth::user()->id], 'id' => 'payment_data_form', 'method' =>'POST', 'class' => 'form-horizontal form-label-left']) !!}
+                                    <div class="form-group">
+                                    {{Form::label('wallet', 'Input your Etherum wallet address', ['class' => 'col-sm-3 control-label'])}}
+                                    <div class="col-sm-9">
+                                        <div class="input-group">
+                                        {{Form::text('wallet', '', ['id' => 'wallet', 'class' => 'form-control', 'placeholder' => ''])}}  
+                                        <span class="input-group-btn">
+                                            {{Form::submit('Save', ['id' => 'payment_action_button', 'class' => 'btn btn-success btn-block'])}}
+                                        </span>
+                                        </div>
+                                    </div>
+                                                    
+                                    </div> 
+                                {!! Form::close() !!}    
+                            @else
+                                Wallet Address: {{auth()->user()->wallet_address}}
+                            @endif
+                        </li>
+
+                        <li class="list-group-item">
+                            @if ($points_total >= $withdraw_point->target)
+               
+                                @if (is_null(auth()->user()->wallet_address))
+                                <a href="" class="btn btn-warning">You have not saved a wallet address</a>
+                                @else
+                                <a href="{{route('dashboard.withdraw')}}" class="btn btn-success">Make a withdrawal</a>
+                                @endif
+
+                            @endif
+                        </li>
                     </ul>
                 </div>
             </div>
