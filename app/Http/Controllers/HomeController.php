@@ -233,7 +233,7 @@ class HomeController extends Controller
         $withdraw->withdrawal_ticket = $ticket;
         $withdraw->save();*/
 
-        withdrawal::create([
+        Withdrawal::create([
             'user_id' => $request->input('hidden_id'),
             'withdrawal_status' => 'unpaid',
             'sub_id' => $request->input('hidden_subscription'),
