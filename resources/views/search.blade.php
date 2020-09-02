@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-9">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">{{ __('Posts') }}</div>
 
@@ -14,7 +14,7 @@
                                 <div class="row">
                                     <div class="col-md-12 col-sm-12">
                                         <h3><a href="/post/{{$post->post_slug}}">{{$post->post_title}}</a></h3>
-                                        <small>Written on {{$post->created_at}} by {{$post->user->name}} | <div class="category"><a href="/category/{{$post->category->category_slug}}">{{$post->category->category_name}}</a></div></small>
+                                        <small>Written on {{$post->created_at}} by {{$post->user->name}}</small>
                                     </div>
                                 </div>                                
                             </div>
@@ -37,7 +37,7 @@
                         @csrf
                         <div class="form-group">
                           <input type="search" name="search" id="search" placeholder="What are you looking for?">
-                          <button type="submit" class="submit"><i class="fa fa-search"></i> Search</button>
+                          <button type="submit" class="submit"><i class="fa fa-search"></i></button>
                         </div>
                     </form>
 
@@ -46,7 +46,7 @@
                             @foreach($categories as $category)
                             
                                 <li class="list-group-item">
-                                    <a href="/category/{{$category->category_slug}}">{{$category->category_name}}</a>
+                                    
                                 </li>
                             @endforeach
                         </ul>

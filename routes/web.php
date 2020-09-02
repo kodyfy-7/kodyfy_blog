@@ -18,9 +18,9 @@ Auth::routes();
 Route::get('/', 'HomeController@index')->name('welcome');
 Route::get('/post/{post}', 'HomeController@show');
 Route::post('/post', 'HomeController@comment_save')->name('comment.save');
-//Route::get('/category/{category}', 'HomeController@show_category');
+Route::get('/category/{category}', 'HomeController@show_category');
 
-//Route::any('/search', 'HomeController@search')->name('search');
+Route::any('/search', 'HomeController@search')->name('search');
 
 Route::get('/home', 'HomeController@dashboard')->name('home');
 Route::post('/upload', 'HomeController@upload_invoice')->name('invoice.upload');

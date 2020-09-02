@@ -26,7 +26,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth', ['except' => ['index', 'show']]);
+        $this->middleware('auth', ['except' => ['index', 'show', 'search', 'category']]);
     }
 
     /**
@@ -36,8 +36,9 @@ class HomeController extends Controller
      */
     public function index()
     {
+        $categories = Category::all();
         $posts = Post::orderBy('created_at', 'desc')->paginate(10);
-        return view('welcome', compact('posts'));
+        return view('welcome', compact('posts', 'categories'));
     }
 
     public function show(Post $post)
@@ -91,6 +92,27 @@ class HomeController extends Controller
         $comment->save();
 
         return redirect()->back()->with('success', 'Comment Created');
+    }
+
+    public function search()
+    {
+            $categories = Category::all();
+            $search = Input::get('search');
+            $details = Post::where('post_title', 'LIKE', '%'.$search.'%')->orWhere('post_excerpt', 'LIKE', '%'.$search.'%')->orWhere('post_content', 'LIKE', '%'.$search.'%')->get();
+            //if(count($details) > 0)
+              //return view('search')->withDetails($search_detail)->withQuery($search);
+              return view('search', compact('details', 'categories', 'search'));
+            //else return view('search')->withMessage('No details found. Try to search again!');
+          
+    }
+
+    public function show_category(Category $category)
+    {   
+        $categories = Category::all();
+        $category = Category::findOrFail($category->id);
+        $posts = Post::where('category_id', '=', $category->id)->orderBy('created_at', 'desc')->paginate(10);
+        
+        return view('category', compact('posts', 'categories', 'category'));
     }
 
     public function dashboard()
@@ -262,36 +284,62 @@ class HomeController extends Controller
 
     public function activate_account(Request $request)
     {
-        //Activate pending payment from user
-        $form_data = array(
-            'sub_status'        =>  '1'
-        );
-
-        Subscription::whereId($request->hidden_subscription)->update($form_data);
-
-        if(SubscriptionDetail::whereSubscriptionId($request->hidden_subscription)->whereTask('refer')->exists())
-        {
-            $target = TargetPoint::first();
+        $acct = $request->hidden_user_id;
+        $subscription = Subscription::whereUserId($acct)->whereEndAt(null)->first();
+        if($subscription){
+            //Activate pending payment from user
             $form_data = array(
-                'point'        =>  $target->refer_task
+                'sub_status'        =>  '1'
             );
 
-            SubscriptionDetail::whereSubscriptionId($request->hidden_subscription)->update($form_data);
+            Subscription::whereId($request->hidden_subscription)->update($form_data);
+
+            if(SubscriptionDetail::whereSubscriptionId($request->hidden_subscription)->whereTask('refer')->exists())
+            {
+                $target = TargetPoint::first();
+                $form_data = array(
+                    'point'        =>  $target->refer_task
+                );
+
+                SubscriptionDetail::whereSubscriptionId($request->hidden_subscription)->update($form_data);
+            }
+
+            $form_data = array(
+                'invoice_status'        =>  'verified'
+            );
+
+            Invoice::whereId($request->hidden_invoice_id)->update($form_data);
+
+            $form_data = array(
+                'payment_status'        =>  '1'
+            );
+
+            User::whereId($request->hidden_user_id)->update($form_data);
+
+            return redirect()->back()->with('success', 'Account activated.');
+
+        } else {
+            $subsCreate = Subscription::create([
+                'user_id' => $request->hidden_user_id,
+                'sub_status' => '1'
+            ]);
+
+            $form_data = array(
+                'invoice_status'        =>  'verified'
+            );
+
+            Invoice::whereId($request->hidden_invoice_id)->update($form_data);
+
+            $form_data = array(
+                'payment_status'        =>  '1',
+                'current_sub_id' => $subsCreate->id
+            );
+
+            User::whereId($request->hidden_user_id)->update($form_data);
+
+            return redirect()->back()->with('success', 'Account activated.');
         }
-
-        $form_data = array(
-            'invoice_status'        =>  'verified'
-        );
-
-        Invoice::whereId($request->hidden_invoice_id)->update($form_data);
-
-        $form_data = array(
-            'payment_status'        =>  '1'
-        );
-
-        User::whereId($request->hidden_user_id)->update($form_data);
-
-        return redirect()->back()->with('success', 'Account activated.');
+        
     }
 
     public function confirm_payment(Request $request)
