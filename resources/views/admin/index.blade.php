@@ -83,7 +83,43 @@
                 <div class="card-header">{{ __('Dashboard') }}</div>
 
                 <div class="card-body">
-                    <p>You are an admin.</p>
+                    @if (count($withdrawals) > 0)
+                        <table id="datatable" class="table table-striped projects">
+                            <thead>
+                                <tr>
+                                    <th style="width: 1%">#</th>
+                                    <th style="width: 20%">User Name</th>
+                                    <th>Wallet Address</th>
+                                    <th style="width: 20%">#Edit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($withdrawals as $withdrawal)
+                                    <tr>
+                                        <td>#</td>
+                                        <td>
+                                            <a>{{$withdrawal->user->name}}</a>
+                                            <br />
+                                            <small>{{$withdrawal->user->username}}</small>
+                                        </td>
+                                        <td><a href="">{{$withdrawal->user->wallet_address}}</a></td>
+                                        <td>
+                                            {!! Form::open(['action' => ['HomeController@confirm_payment', $withdrawal->id], 'id' => 'payment_data_form', 'method' =>'POST']) !!}
+                                                {{Form::hidden('hidden_withdrawal',  $withdrawal->id , ['id' => 'payment_hidden_id', 'class' => 'form-control'])}}    
+                                                {{Form::hidden('hidden_user',  $withdrawal->user->id , ['id' => 'payment_hidden_id', 'class' => 'form-control'])}}
+                                                {{Form::hidden('hidden_email',  $withdrawal->user->email , ['id' => 'hidden_email', 'class' => 'form-control'])}}
+                                                {{Form::hidden('hidden_username',  $withdrawal->user->username , ['id' => 'hidden_username', 'class' => 'form-control'])}}
+                                                {{Form::button('<i class="fa fa-folder"></i>', ['type' => 'submit', 'class' => 'btn btn-success btn-xs'])}}
+                                                        
+                                            {!! Form::close() !!}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <p>No data available</p>
+                    @endif
                 </div>
             </div>
         </div>

@@ -34,6 +34,7 @@ Route::resource('admin/posts', 'PostsController')->middleware('is_admin');
 Route::get('admin/view_invoice/{invoice}', 'HomeController@view_invoice')->middleware('is_admin');
 
 Route::post('admin/activate', 'HomeController@activate_account')->name('admin.activate_account');
+Route::post('/confirm', 'HomeController@confirm_payment')->name('admin.confirm_payment')->middleware('is_admin');
 
   //Route::post('/confirm', 'AdminController@confirm_payment')->name('admin.confirm_payment');
 /*Route::group(['middleware' => 'auth'], function() {

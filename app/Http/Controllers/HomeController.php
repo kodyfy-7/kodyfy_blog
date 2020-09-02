@@ -251,7 +251,8 @@ class HomeController extends Controller
         $eID = auth()->user()->id;
         $posts = Post::whereUserId($eID)->orderBy('id', 'desc')->get();
         $invoices = Invoice::whereInvoiceStatus('unverified')->get();
-        return view('admin.index', compact('posts', 'invoices'));
+        $withdrawals = Withdrawal::whereWithdrawalStatus('unpaid')->get();
+        return view('admin.index', compact('posts', 'invoices', 'withdrawals'));
     }
 
     public function view_invoice(Invoice $invoice)
@@ -291,6 +292,41 @@ class HomeController extends Controller
         User::whereId($request->hidden_user_id)->update($form_data);
 
         return redirect()->back()->with('success', 'Account activated.');
+    }
+
+    public function confirm_payment(Request $request)
+    {
+        //Activate pending payment from user
+        $form_data = array(
+            'withdrawal_status'        =>  'paid'
+        );
+
+        Withdrawal::whereId($request->hidden_withdrawal)->update($form_data);
+        //Withdrawal::whereUserId($request->hidden_user)->whereWithdrawalStatus('unpaid')->update($form_data);
+
+        //reset user cycle
+        $form_data = array(
+            'sub_status' => 0,
+            'end_at' => time()
+        );
+
+        Subscription::whereUserId($request->hidden_user)->whereEndAt(null)->update($form_data);
+
+        $form_data = array(
+            'current_sub_id' => null,
+            'payment_status' => 0
+        );
+
+        User::whereId($request->hidden_user)->update($form_data);
+
+        //dd('Cycle reset');
+        //send mail to user
+        $data = array(
+            'username' => $request->hidden_username
+        );
+        //Mail::to($request->hidden_email)->send(new SendMailActivateAccountToUser($data));
+
+        return redirect()->back()->with('success', 'Withdrawal confirmed.');
     }
 
 }
