@@ -93,38 +93,11 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'referrer_id' => $referrer ? $referrer->id : null,
             'password' => Hash::make($data['password']),
+            'is_admin' => 1,
+            'admin_role' => 1
         ]);
 
-        /*Point::create([
-            'user_id' => $referrer ? $referrer->id : null,
-            'who_id' => $user->id,
-            'description' => 'refer'
-        ]);*/
-
-        $subscription = Subscription::create([
-            'user_id' => $user->id,
-            'sub_status' => '0'
-        ]);
-
-        $testv = User::whereId($user->id)->update([
-            'current_sub_id' => $subscription->id
-        ]);
         
-
-        if(is_null($referrer))
-        {
-            return $user;
-        } else 
-        {
-            SubscriptionDetail::create([
-                'who_id' => $referrer ? $referrer->id : null,
-                'who_sub_id' => $who_sub ? $who_sub->current_sub_id : null,
-                'subscription_id' => $subscription->id,
-                'task' => 'refer'
-            ]);
-
-            return $user;
-        }
     }
 
     protected function registered(Request $request, $user)
