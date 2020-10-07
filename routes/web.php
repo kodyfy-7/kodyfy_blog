@@ -21,6 +21,9 @@ Route::post('/post', 'HomeController@comment_save')->name('comment.save');
 Route::get('/category/{category}', 'HomeController@show_category');
 
 Route::any('/search', 'HomeController@search')->name('search');
+Route::get('/about', function () {
+  return view('about');
+})->name('about');
 
 Route::get('/home', 'HomeController@dashboard')->name('home');
 Route::post('/upload', 'HomeController@upload_invoice')->name('invoice.upload');
@@ -35,6 +38,8 @@ Route::get('admin/view_invoice/{invoice}', 'HomeController@view_invoice')->middl
 
 Route::post('admin/activate', 'HomeController@activate_account')->name('admin.activate_account');
 Route::post('/confirm', 'HomeController@confirm_payment')->name('admin.confirm_payment')->middleware('is_admin');
+
+Route::resource('admin/category', 'CategoriesController')->middleware('is_admin');
 
   //Route::post('/confirm', 'AdminController@confirm_payment')->name('admin.confirm_payment');
 /*Route::group(['middleware' => 'auth'], function() {

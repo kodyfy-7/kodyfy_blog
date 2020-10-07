@@ -2,7 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+use Request;
+use Validator;
+use DB;
+use Auth;
+
 use App\Post;
 use App\Comment;
 use App\Invoice;
@@ -12,10 +18,8 @@ use App\SubscriptionDetail;
 use App\TargetPoint;
 use App\Category;
 use App\Withdrawal;
-use Validator;
-use DB;
-use Auth;
-use Illuminate\Support\Str;
+
+
 
 class HomeController extends Controller
 {
@@ -70,10 +74,16 @@ class HomeController extends Controller
                     return view('post', compact('post', 'comments', 'categories'));
                 }
             }
-            dd('i dont have an active payment, so i am just gonna read.');
+                $categories = Category::all();
+                $comments = Comment::where('post_id', $post->id)->orderBy('id', 'desc')->get();
+
+                return view('post', compact('post', 'comments', 'categories'));
         } else{
             
-            dd('i am just a guest');
+            $categories = Category::all();
+            $comments = Comment::where('post_id', $post->id)->orderBy('id', 'desc')->get();
+
+            return view('post', compact('post', 'comments', 'categories'));
         }
     }
 
@@ -86,8 +96,8 @@ class HomeController extends Controller
         //Create Comment
         $comment = new Comment;
         $comment->user_id = auth()->user()->id;
-        $comment->post_id = $request->input('hidden_id');
-        $comment->comment = $request->input('comment');
+        $comment->post_id = Request::input('hidden_id');
+        $comment->comment = Request::input('comment');
         $comment->comment_status = 'active';
         $comment->save();
 
@@ -96,14 +106,10 @@ class HomeController extends Controller
 
     public function search()
     {
-            $categories = Category::all();
-            $search = Input::get('search');
-            $details = Post::where('post_title', 'LIKE', '%'.$search.'%')->orWhere('post_excerpt', 'LIKE', '%'.$search.'%')->orWhere('post_content', 'LIKE', '%'.$search.'%')->get();
-            //if(count($details) > 0)
-              //return view('search')->withDetails($search_detail)->withQuery($search);
-              return view('search', compact('details', 'categories', 'search'));
-            //else return view('search')->withMessage('No details found. Try to search again!');
-          
+        $categories = Category::all();
+        $search = Request::input('search');
+        $details = Post::where('post_title', 'LIKE', '%'.$search.'%')->orWhere('post_content', 'LIKE', '%'.$search.'%')->paginate(10);
+        return view('search', compact('details', 'categories', 'search'));
     }
 
     public function show_category(Category $category)
@@ -120,9 +126,9 @@ class HomeController extends Controller
         $reader = auth()->user();
         if($reader->payment_status > 0)
         {
-            $subDetail = SubscriptionDetail::whereWhoSubId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->exists();
+            $subDetail = SubscriptionDetail::whereWhoId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->exists();
             if($subDetail) {
-                $points_per_refer = SubscriptionDetail::whereWhoSubId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->sum('point');
+                $points_per_refer = SubscriptionDetail::whereWhoId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->sum('point');
             } else {
                 $points_per_refer = 0;
             }
@@ -139,7 +145,7 @@ class HomeController extends Controller
 
             $progress_point = $points_total / $b;
             $withdraw_point = TargetPoint::first();
-            return view('home', compact('points_per_refer', 'points_per_post', 'points_total', 'progress_point', 'withdraw_point'));
+            return view('user.dashboard', compact('points_per_refer', 'points_per_post', 'points_total', 'progress_point', 'withdraw_point'));
         } else 
         {
             $points_per_post = 0;
@@ -147,28 +153,28 @@ class HomeController extends Controller
             $points_total = 0;
             $progress_point = 0;
             $withdraw_point = TargetPoint::first();
-            return view('home', compact('points_per_refer', 'points_per_post', 'points_total', 'progress_point', 'withdraw_point'));
+            return view('user.dashboard', compact('points_per_refer', 'points_per_post', 'points_total', 'progress_point', 'withdraw_point'));
         }
         
     }
 
     public function upload_invoice(Request $request)
     {
-        $this->validate($request, [
+        $data = Request::validate([
             'payment_invoice' => 'required|image|max:1999'
         ]);
 
         //Handle file upload
         // Get filename with the extension
-        $filenameWithExt = $request->file('payment_invoice')->getClientOriginalName();
+        $filenameWithExt = Request::file('payment_invoice')->getClientOriginalName();
         // Get just filename
         $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
         // Get just ext
-        $extension = $request->file('payment_invoice')->getClientOriginalExtension();
+        $extension = Request::file('payment_invoice')->getClientOriginalExtension();
         // Filename to store
         $fileNameToStore = $filename.'_'.time().'.'.$extension;
         // Upload Image
-        $path = $request->file('payment_invoice')->storeAs('public/invoices', $fileNameToStore);
+        $path = Request::file('payment_invoice')->storeAs('public/images/invoices', $fileNameToStore);
         
         $var = 'ba';
         $name = Str::kebab(auth()->user()->name);
@@ -187,13 +193,13 @@ class HomeController extends Controller
 
     public function save_wallet(Request $request)
     {
-        $this->validate($request, [
+        $data = Request::validate([
             'wallet' => 'required'
         ]);
 
         //Activate pending payment from user
         $form_data = array(
-            'wallet_address'        =>  $request->wallet,
+            'wallet_address'        =>  Request::input('wallet'),
         );
 
         User::whereId(auth()->user()->id)->update($form_data);
@@ -207,9 +213,9 @@ class HomeController extends Controller
         $reader = auth()->user();
         if($reader->payment_status > 0)
         {
-            $subDetail = SubscriptionDetail::whereWhoSubId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->exists();
+            $subDetail = SubscriptionDetail::whereWhoId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->exists();
             if($subDetail) {
-                $points_per_refer = SubscriptionDetail::whereWhoSubId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->sum('point');
+                $points_per_refer = SubscriptionDetail::whereWhoId($reader->current_sub_id)->whereWhoId($reader->id)->where('task', '=', 'refer')->sum('point');
             } else {
                 $points_per_refer = 0;
             }
@@ -230,11 +236,8 @@ class HomeController extends Controller
             } else{
                 
                 $withdrawal = Withdrawal::where('user_id', '=', $reader->id)->where('sub_id', '=', $reader->current_sub_id)->whereWithdrawalStatus('unpaid')->orderBy('id', 'desc')->first();
-
-                //$wallet_address = Wallet::where('user_id', '=', 1)->first();
-
                 
-                return view('withdraw', compact('withdraw_point', 'withdrawal'));
+                return view('user.withdraw', compact('withdraw_point', 'withdrawal'));
             }
         } else 
         {
@@ -249,18 +252,11 @@ class HomeController extends Controller
         $ticket = $var.'_'.$name.'_'.time();
 
         $withdraw = new Withdrawal;
-        $withdraw->user_id = $request->input('hidden_id');
+        $withdraw->user_id = Request::input('hidden_id');
         $withdraw->withdrawal_status = 'unpaid';
-        $withdraw->sub_id = $request->input('hidden_subscription');
+        $withdraw->sub_id = Request::input('hidden_subscription');
         $withdraw->withdrawal_ticket = $ticket;
         $withdraw->save();
-
-        /*Withdrawal::create([
-            'user_id' => $request->input('hidden_id'),
-            'withdrawal_status' => 'unpaid',
-            'sub_id' => $request->input('hidden_subscription'),
-            'withdrawal_ticket' => $ticket
-        ]);*/
 
         //send mail to admin for withdraw request, after withdrawal restart cycle
 
@@ -274,7 +270,10 @@ class HomeController extends Controller
         $posts = Post::whereUserId($eID)->orderBy('id', 'desc')->get();
         $invoices = Invoice::whereInvoiceStatus('unverified')->get();
         $withdrawals = Withdrawal::whereWithdrawalStatus('unpaid')->get();
-        return view('admin.index', compact('posts', 'invoices', 'withdrawals'));
+
+        $tposts = Post::all();
+
+        return view('admin.index', compact('posts', 'invoices', 'withdrawals', 'tposts'));
     }
 
     public function view_invoice(Invoice $invoice)
@@ -284,7 +283,7 @@ class HomeController extends Controller
 
     public function activate_account(Request $request)
     {
-        $acct = $request->hidden_user_id;
+        $acct = Request::input('hidden_user_id');
         $subscription = Subscription::whereUserId($acct)->whereEndAt(null)->first();
         if($subscription){
             //Activate pending payment from user
@@ -292,35 +291,35 @@ class HomeController extends Controller
                 'sub_status'        =>  '1'
             );
 
-            Subscription::whereId($request->hidden_subscription)->update($form_data);
+            Subscription::whereId(Request::input('hidden_subscription'))->update($form_data);
 
-            if(SubscriptionDetail::whereSubscriptionId($request->hidden_subscription)->whereTask('refer')->exists())
+            if(SubscriptionDetail::whereSubscriptionId(Request::input('hidden_subscription'))->whereTask('refer')->exists())
             {
                 $target = TargetPoint::first();
                 $form_data = array(
                     'point'        =>  $target->refer_task
                 );
 
-                SubscriptionDetail::whereSubscriptionId($request->hidden_subscription)->update($form_data);
+                SubscriptionDetail::whereSubscriptionId(Request::input('hidden_subscription'))->update($form_data);
             }
 
             $form_data = array(
                 'invoice_status'        =>  'verified'
             );
 
-            Invoice::whereId($request->hidden_invoice_id)->update($form_data);
+            Invoice::whereId(Request::input('hidden_invoice_id'))->update($form_data);
 
             $form_data = array(
                 'payment_status'        =>  '1'
             );
 
-            User::whereId($request->hidden_user_id)->update($form_data);
+            User::whereId(Request::input('hidden_user_id'))->update($form_data);
 
             return redirect()->back()->with('success', 'Account activated.');
 
         } else {
             $subsCreate = Subscription::create([
-                'user_id' => $request->hidden_user_id,
+                'user_id' => Request::input('hidden_user_id'),
                 'sub_status' => '1'
             ]);
 
@@ -328,14 +327,14 @@ class HomeController extends Controller
                 'invoice_status'        =>  'verified'
             );
 
-            Invoice::whereId($request->hidden_invoice_id)->update($form_data);
+            Invoice::whereId(Request::input('hidden_invoice_id'))->update($form_data);
 
             $form_data = array(
                 'payment_status'        =>  '1',
                 'current_sub_id' => $subsCreate->id
             );
 
-            User::whereId($request->hidden_user_id)->update($form_data);
+            User::whereId(Request::input('hidden_user_id'))->update($form_data);
 
             return redirect()->back()->with('success', 'Account activated.');
         }
@@ -349,8 +348,7 @@ class HomeController extends Controller
             'withdrawal_status'        =>  'paid'
         );
 
-        Withdrawal::whereId($request->hidden_withdrawal)->update($form_data);
-        //Withdrawal::whereUserId($request->hidden_user)->whereWithdrawalStatus('unpaid')->update($form_data);
+        Withdrawal::whereId(Request::input('hidden_withdrawal'))->update($form_data);
 
         //reset user cycle
         $form_data = array(
@@ -358,19 +356,18 @@ class HomeController extends Controller
             'end_at' => time()
         );
 
-        Subscription::whereUserId($request->hidden_user)->whereEndAt(null)->update($form_data);
+        Subscription::whereUserId(Request::input('hidden_user'))->whereEndAt(null)->update($form_data);
 
         $form_data = array(
             'current_sub_id' => null,
             'payment_status' => 0
         );
 
-        User::whereId($request->hidden_user)->update($form_data);
+        User::whereId(Request::input('hidden_user'))->update($form_data);
 
-        //dd('Cycle reset');
         //send mail to user
         $data = array(
-            'username' => $request->hidden_username
+            'username' => Request::input('hidden_username')
         );
         //Mail::to($request->hidden_email)->send(new SendMailActivateAccountToUser($data));
 

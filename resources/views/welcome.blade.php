@@ -1,63 +1,38 @@
 @extends('layouts.app')
-
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-9">
-            <div class="card">
-                <div class="card-header">{{ __('Posts') }}</div>
-
-                <div class="card-body">
-                    @if(count($posts) > 0)
-                        @foreach($posts as $post)
-                            <div class="well">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <h3><a href="/post/{{$post->post_slug}}">{{$post->post_title}}</a></h3>
-                                        <small>Written on {{$post->created_at}} by {{$post->user->name}} | <div class="category"><a href="/category/{{$post->category->category_slug}}">{{$post->category->category_name}}</a></div></small>
-                                    </div>
-                                </div>                                
+    <main class="posts-listing col-lg-8"> 
+        <div class="container">
+            <div class="row">
+                @if(count($posts) > 0)
+                    @foreach($posts as $post)
+                        <!-- post -->
+                        <div class="post col-xl-6">
+                            <div class="post-details">
+                                <div class="post-meta d-flex justify-content-between">
+                                    <div class="category"><a href="/category/{{$post->category->category_slug}}">{{$post->category->category_name}}</a></div>
+                                </div>
+                                <a href="/post/{{$post->post_slug}}"><h3 class="h4">{{$post->post_title}}</h3></a>
+                                <p class="text-muted">{{ substr($post->post_content, 0, 100)}}</p>
+                                <footer class="post-footer d-flex align-items-center">
+                                    <a href="#" class="author d-flex align-items-center flex-wrap">
+                                        <div class="title"><span>{{$post->user->name}}</span></div>
+                                    </a>
+                                    <div class="date"><i class="icon-clock"></i> {{$post->created_at->diffForHumans()}}</div>
+                                    <div class="comments meta-last"><i class="icon-comment"></i>{{count($post->comments)}}</div>
+                                </footer>
                             </div>
-                            <hr>
-                        @endforeach
-                        {{$posts->links()}}
+                        </div>
+
+                    @endforeach
+                        <div class="col-md-12">
+                            {{$posts->links('vendor.pagination.custom')}}
+                        </div>
                     @else
                         <p>No posts found</p>
-                    @endif
-                </div>
+                @endif
+                
             </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">{{ __('Posts') }}</div>
-
-                <div class="card-body">
-                    <form action="/search" class="search-form">
-                        @csrf
-                        <div class="form-group">
-                          <input type="search" name="search" id="search" placeholder="What are you looking for?">
-                          <button type="submit" class="submit"><i class="fa fa-search"></i> Search</button>
-                        </div>
-                    </form>
-
-                    @if(count($categories) > 0)
-                        <ul class="list-group mt-3">
-                            @foreach($categories as $category)
-                            
-                                <li class="list-group-item">
-                                    <a href="/category/{{$category->category_slug}}">{{$category->category_name}}</a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @else
-                        <p>No categories found</p>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-
-    </div>
-</div>
+    </main>
 @endsection
+    

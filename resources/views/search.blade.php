@@ -1,63 +1,40 @@
 @extends('layouts.app')
-
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">{{ __('Posts') }}</div>
-
-                <div class="card-body">
-                    @if(count($posts) > 0)
-                        @foreach($posts as $post)
-                            <div class="well">
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12">
-                                        <h3><a href="/post/{{$post->post_slug}}">{{$post->post_title}}</a></h3>
-                                        <small>Written on {{$post->created_at}} by {{$post->user->name}}</small>
-                                    </div>
-                                </div>                                
+    <main class="posts-listing col-lg-8"> 
+        <div class="container">
+            <header> 
+                <h2>Search</h2>
+                <p class="text-big">You searched for: <em>{{$search}}</em></p>
+            </header>
+            <div class="row">
+                @if(count($details) > 0)
+                    @foreach($details as $detail)
+                        <!-- post -->
+                        <div class="post col-xl-6">
+                            <div class="post-details">
+                                <div class="post-meta d-flex justify-content-between">
+                                    <div class="category"><a href="/category/{{$detail->category->category_slug}}">{{$detail->category->category_name}}</a></div>
+                                </div>
+                                <a href="/post/{{$detail->post_slug}}"><h3 class="h4">{{$detail->post_title}}</h3></a>
+                                <p class="text-muted">{{ substr($detail->post_content, 0, 100)}}</p>
+                                <footer class="post-footer d-flex align-items-center">
+                                    <a href="#" class="author d-flex align-items-center flex-wrap">
+                                        <div class="title"><span>{{$detail->user->name}}</span></div>
+                                    </a>
+                                    <div class="date"><i class="icon-clock"></i> {{$detail->created_at->diffForHumans()}}</div>
+                                    <div class="comments meta-last"><i class="icon-comment"></i>{{count($detail->comments)}}</div>
+                                </footer>
                             </div>
-                            <hr>
-                        @endforeach
-                        {{$posts->links()}}
+                        </div>
+
+                    @endforeach
+                        {{$details->links('vendor.pagination.custom')}}
                     @else
                         <p>No posts found</p>
-                    @endif
-                </div>
+                @endif
+                
             </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">{{ __('Posts') }}</div>
-
-                <div class="card-body">
-                    <form action="/search" class="search-form">
-                        @csrf
-                        <div class="form-group">
-                          <input type="search" name="search" id="search" placeholder="What are you looking for?">
-                          <button type="submit" class="submit"><i class="fa fa-search"></i></button>
-                        </div>
-                    </form>
-
-                    @if(count($categories) > 0)
-                        <ul class="list-group mt-3">
-                            @foreach($categories as $category)
-                            
-                                <li class="list-group-item">
-                                    
-                                </li>
-                            @endforeach
-                        </ul>
-                    @else
-                        <p>No categories found</p>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-
-    </div>
-</div>
+    </main>
 @endsection
+    

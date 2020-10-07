@@ -1,27 +1,36 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    {{$post->post_title}} <small>by {{$post->user->name}} at {{$post->created_at->diffForHumans()}}</small>
+    <!-- Latest Posts -->
+    <main class="post blog-post col-lg-8"> 
+        <div class="container">
+            <div class="post-single">
+                <div class="post-details">
+                <div class="post-meta d-flex justify-content-between">
+                    <div class="category"><a href="/category/{{$post->category->category_slug}}">{{$post->category->category_name}}</a></div>
                 </div>
-
-                <div class="card-body">
-                    {{$post->post_content}}
-
-                    <hr><hr>
-                    <h4>Comments ({{count($comments)}})</h4>
-
+                <h1>{{$post->post_title}}<a href="#"><i class="fa fa-bookmark-o"></i></a></h1>
+                <div class="post-footer d-flex align-items-center flex-column flex-sm-row"><a href="#" class="author d-flex align-items-center flex-wrap">
+                    <div class="title"><span>{{$post->user->name}}</span></div></a>
+                    <div class="d-flex align-items-center flex-wrap">       
+                    <div class="date"><i class="icon-clock"></i>  {{$post->created_at->diffForHumans()}}</div>
+                    <div class="comments meta-last"><i class="icon-comment"></i> {{count($comments)}}</div>
+                    </div>
+                </div>
+                <div class="post-body">
+                    <p>{{$post->post_content}}</p>
+                </div>
+                <div class="post-comments">
+                    <header>
+                    <h3 class="h6">Post Comments<span class="no-of-comments">({{count($comments)}})</span></h3>
+                    </header>
                     @if (count($comments) > 0) 
                         @foreach ($comments as $comment)
                             <div class="comment">
                                 <div class="comment-header d-flex justify-content-between">
                                     <div class="user d-flex align-items-center">
                                         <div class="title">
-                                            <strong>{{$comment->user->name}} </strong> <span class="date">{{$comment->created_at}}</span>
+                                            <strong>{{$comment->user->name}} </strong> <span class="date">{{$comment->created_at->diffForHumans()}}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -30,7 +39,14 @@
                                 </div>
                             </div>
                         @endforeach
+                    @else 
+                            No comments
                     @endif
+                </div>
+                <div class="add-comment">
+                    <header>
+                    <h3 class="h6">Leave a reply</h3>
+                    </header>                    
                     @guest
                         <p>You must login before commenting.</p>
                     @else
@@ -53,11 +69,10 @@
                         </div>
                       </form>
                     @endguest
-
-
+                </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </main>
 @endsection
+    

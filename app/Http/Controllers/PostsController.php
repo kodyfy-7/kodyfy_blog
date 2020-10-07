@@ -28,9 +28,8 @@ class PostsController extends Controller
      */
     public function index()
     {
-        /*$eID = auth()->user()->id;
-        $posts = Post::whereEditorId($eID)->get();
-        return view('editor.posts.index', compact('posts', 'eID'));*/
+        $posts = Post::all();
+        return view('admin.post.index', compact('posts'));
     }
 
     /**
@@ -40,7 +39,8 @@ class PostsController extends Controller
      */
     public function create()
     {
-        return view('admin.posts.create');
+        $post = new Post();
+        return view('admin.post.create', compact('post'));
     }
 
     /**
@@ -94,14 +94,11 @@ class PostsController extends Controller
      */
     public function edit(Post $post)
     {
-        //$post = Post::findOrFail($post->id);
-         //dd($post);
-        //Check for correct user
         if(auth()->user()->id !== $post->user->id){
             return redirect()->back()->with('error', 'Unauthorized page!');
         }
 
-        return view('admin.posts.edit', compact('post'));
+        return view('admin.post.edit', compact('post'));
     }
 
     /**
