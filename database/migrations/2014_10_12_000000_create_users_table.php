@@ -20,8 +20,8 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->boolean('is_admin')->nullable();
-            $table->boolean('admin_role')->nullable();
+            $table->integer('is_admin')->nullable();
+            $table->integer('admin_role')->nullable();
             $table->string('user_image')->nullable();
             $table->string('wallet_address')->nullable();
             $table->unsignedBigInteger('referrer_id')->nullable();

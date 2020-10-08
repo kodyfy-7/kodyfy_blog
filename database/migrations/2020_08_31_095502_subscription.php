@@ -17,7 +17,7 @@ class Subscription extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users');
-            $table->boolean('sub_status');
+            $table->integer('sub_status');
             $table->string('end_at')->nullable();
             $table->timestamps();
         });

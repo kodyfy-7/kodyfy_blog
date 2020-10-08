@@ -266,19 +266,28 @@ class HomeController extends Controller
 
     public function adminHome()
     {
-        $eID = auth()->user()->id;
-        $posts = Post::whereUserId($eID)->orderBy('id', 'desc')->get();
+        $posts = Post::all();
+        $users = User::whereIsAdmin(null)->get();
+        $admins = User::whereIsAdmin(1)->get();
+
+        return view('admin.index', compact('posts', 'admins', 'users'));
+    }
+
+    public function verification()
+    {
         $invoices = Invoice::whereInvoiceStatus('unverified')->get();
+        return view('admin.user.verification', compact('invoices'));
+    }
+
+    public function adwithdrawal()
+    {
         $withdrawals = Withdrawal::whereWithdrawalStatus('unpaid')->get();
-
-        $tposts = Post::all();
-
-        return view('admin.index', compact('posts', 'invoices', 'withdrawals', 'tposts'));
+        return view('admin.user.withdrawal', compact('withdrawals'));
     }
 
     public function view_invoice(Invoice $invoice)
     {
-        return view('admin.view_invoice', compact('invoice'));
+        return view('admin.user.view_invoice', compact('invoice'));
     }
 
     public function activate_account(Request $request)

@@ -20,6 +20,18 @@
                 <div class="post-body">
                     <p>{{$post->post_content}}</p>
                 </div>
+                <div class="post-tags">
+                    @if(!Auth::guest())
+                        @if(Auth::user()->id == $post->user->id)
+                            <a href="/admin/posts/{{$post->id}}/edit" class="btn btn-default">Edit</a>
+                
+                            {!!Form::open(['action' => ['PostsController@destroy', $post->id], 'method' => 'POST', 'class' => 'pull-right'])!!}
+                                {{Form::hidden('_method', 'DELETE')}}
+                                {{Form::submit('Delete', ['class' => 'btn btn-danger'])}}
+                            {!!Form::close()!!}
+                        @endif
+                    @endif
+                </div>
                 <div class="post-comments">
                     <header>
                     <h3 class="h6">Post Comments<span class="no-of-comments">({{count($comments)}})</span></h3>

@@ -33,24 +33,20 @@ Route::post('/withdrawal', 'HomeController@withdrawal')->name('dashboard.withdra
 
 
 Route::get('admin/home', 'HomeController@adminHome')->name('admin.home')->middleware('is_admin');
-Route::resource('admin/posts', 'PostsController')->middleware('is_admin');
-Route::get('admin/view_invoice/{invoice}', 'HomeController@view_invoice')->middleware('is_admin');
+
+Route::get('admin/users/verification', 'HomeController@verification')->name('admin.verification')->middleware('is_admin');
+
+Route::get('admin/users/verification/view_invoice/{invoice}', 'HomeController@view_invoice')->middleware('is_admin');
 
 Route::post('admin/activate', 'HomeController@activate_account')->name('admin.activate_account');
+
+Route::get('admin/users/withdrawal', 'HomeController@adwithdrawal')->name('admin.withdrawal')->middleware('is_admin');
+
 Route::post('/confirm', 'HomeController@confirm_payment')->name('admin.confirm_payment')->middleware('is_admin');
+
+Route::resource('admin/posts', 'PostsController')->middleware('is_admin');
 
 Route::resource('admin/category', 'CategoriesController')->middleware('is_admin');
 
-  //Route::post('/confirm', 'AdminController@confirm_payment')->name('admin.confirm_payment');
-/*Route::group(['middleware' => 'auth'], function() {
+Route::resource('admin/users', 'AdminsController')->middleware('is_admin');
 
-});*/
-//Route::post('admin/posts/{id}', 'PostsController@publish')->middleware('is_admin');
-
-//Route::post('admin/posts/{id}', 'PostsController@unpublish')->middleware('is_admin');
-
-/*Route::get('admin/create_post', 'HomeController@create_post')->name('post.add')->middleware('is_admin');
-Route::get('admin/{post}/edit_post/', 'HomeController@edit_post')->name('post.edit')->middleware('is_admin');
-Route::post('admin/update_post/{post}', 'HomeController@update_post')->name('post.update')->middleware('is_admin');
-Route::post('admin/create_post', 'HomeController@save_post')->name('post.save')->middleware('is_admin');
-Route::post('admin/destroy_post', 'HomeController@destroy_post')->name('post.destroy')->middleware('is_admin');*/

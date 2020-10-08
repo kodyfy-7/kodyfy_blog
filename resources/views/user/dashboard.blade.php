@@ -174,7 +174,7 @@
                   @if (is_null(auth()->user()->wallet_address))
                     <a href="" class="btn btn-warning">You have not saved a wallet address</a>
                   @else
-                    <a href="{{route('dashboard.withdraw')}}" class="btn btn-success">Make a withdrawal</a>
+                    <a href="{{route('dashboard.withdraw')}}" class="btn btn-success">Process withdrawal</a>
                   @endif
                 @endif
               </div>

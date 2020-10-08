@@ -82,6 +82,16 @@
                   <li><a href="/admin/category/"><i class="fa fa-tasks"></i> Categories </a></li>
 
                   <li><a href="/admin/posts/"><i class="fa fa-edit"></i> Articles </a></li>
+                  <li><a><i class="fa fa-users"></i> Users <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu" style="display: none">
+                      <li><a href="/admin/users/">All Users</a>
+                      </li>
+                      <li><a href="/admin/users/verification/">Verifcation</a>
+                      </li>
+                      <li><a href="/admin/users/withdrawal/">Withdrawal</a>
+                      </li>
+                    </ul>
+                  </li>
                 @else
                   <li><a href="{{ route('home') }}"><i class="fa fa-dashboard"></i> Dashboard </a></li>
                 @endif

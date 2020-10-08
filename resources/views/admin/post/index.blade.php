@@ -48,15 +48,12 @@
                                         <td>{{$loop->iteration}}</td>
                                         <td>{{$post->post_title}}</td>
                                         <td>
-                                            <div class="btn-group" role="group">
-                                                
                                                 <a href="/admin/posts/{{$post->post_slug}}/edit" class="btn btn-default btn-xs">Edit</a>
-                                                {!!Form::open(['action' => ['PostsController@destroy', $post->id], 'method' => 'POST'])!!}
+                                                {!!Form::open(['action' => ['PostsController@destroy', $post->id], 'method' => 'POST', 'class' => 'pull-right'])!!}
                                                     {{Form::hidden('_method', 'DELETE')}}
                                                     {{Form::submit('Delete', ['class' => 'btn btn-danger btn-xs'])}}
                                                 {!!Form::close()!!}
                                                 
-                                            </div>
                                         </td> 
                                     </tr>
                                 @endforeach
