@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::post('/pay', 'RaveController@initialize')->name('pay');
+Route::post('/rave/callback', 'RaveController@callback')->name('callback');
+
 Auth::routes();
 
 Route::get('/', 'HomeController@index')->name('welcome');

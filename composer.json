@@ -18,7 +18,8 @@
         "laravel/tinker": "^2.0",
         "laravel/ui": "^2.2",
         "laravelcollective/html": "^6.1",
-        "livewire/livewire": "^1.3"
+        "livewire/livewire": "^1.3",
+        "unisharp/laravel-ckeditor": "^4.7"
     },
     "require-dev": {
         "facade/ignition": "^2.0",
