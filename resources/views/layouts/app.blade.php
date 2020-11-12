@@ -116,13 +116,6 @@
                 <header>
                     <h3 class="h6">Categories</h3>
                 </header>
-                @if(count($categories) > 0)
-                    @foreach($categories as $category)
-                        <div class="item d-flex justify-content-between"><a href="/category/{{$category->category_slug}}">{{$category->category_name}}</a><span>{{count($category->posts)}}</span></div>   
-                    @endforeach
-                @else
-                    <div class="item d-flex justify-content-between">No categories found</div>
-                @endif
             </div>
           </aside>
         </div>
